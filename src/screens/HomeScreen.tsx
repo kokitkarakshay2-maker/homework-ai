@@ -1,16 +1,26 @@
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Camera, Image as ImageIcon, ChevronRight, Settings, Clock } from 'lucide-react';
 import { useImageUpload } from '../hooks/useImageUpload';
 import { validateImages } from '../utils/imageValidation';
 import { useHistoryQuery } from '../hooks/useHomework';
 import { AppShell, AppContent } from '../components/layout/AppShell';
+import { getGreeting } from '../utils/getGreeting';
 
 export default function HomeScreen() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { addImages, setError, error: uploadError } = useImageUpload();
   const { data: historyData, isLoading } = useHistoryQuery(0, 5);
+  const [greetingInfo, setGreetingInfo] = useState(getGreeting());
+
+  useEffect(() => {
+    // Check every minute if the greeting period has changed
+    const intervalId = setInterval(() => {
+      setGreetingInfo(getGreeting());
+    }, 60000);
+    return () => clearInterval(intervalId);
+  }, []);
 
   const handleGallerySelection = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { valid, files, error: validationError } = validateImages(e.target.files);
@@ -41,20 +51,29 @@ export default function HomeScreen() {
     }
   };
 
+  const recentItems = historyData?.items 
+    ? [...historyData.items]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 5) 
+    : [];
+
   return (
     <AppShell>
       <AppContent className="px-6 pt-12 pb-6 flex flex-col">
       {/* Header */}
       <header className="mb-12 flex justify-between items-center">
         <div>
-          <p className="text-muted-foreground text-sm font-medium mb-1 tracking-wide uppercase">Good evening</p>
+          <p className="text-muted-foreground text-sm font-medium mb-1 tracking-wide uppercase">
+            {greetingInfo.greeting}
+          </p>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Homework AI</h1>
         </div>
         <button 
           onClick={() => navigate('/settings')} 
-          className="w-10 h-10 rounded-full bg-surface border border-white/5 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card-hover transition-all"
+          className="relative w-[42px] h-[42px] rounded-full bg-surface border border-white/10 flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-md group"
         >
-          <Settings className="w-5 h-5" />
+          <span className="font-semibold text-[15px] text-foreground group-hover:text-primary transition-colors">A</span>
+          <div className="absolute bottom-0 right-0 w-3 h-3 bg-blue-500 rounded-full border-[2.5px] border-surface" />
         </button>
       </header>
 
@@ -122,8 +141,8 @@ export default function HomeScreen() {
                 </div>
               </div>
             ))
-          ) : historyData?.items && historyData.items.length > 0 ? (
-            historyData.items.map((item) => (
+          ) : recentItems.length > 0 ? (
+            recentItems.map((item) => (
               <button 
                 key={item.id}
                 onClick={() => navigate(`/history/${item.id}`, { state: { resultData: item } })}

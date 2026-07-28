@@ -49,7 +49,7 @@ export default function HistoryScreen() {
             placeholder="Search history..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-10 pl-9 pr-4 bg-surface border border-white/10 rounded-[12px] text-sm outline-none focus:border-white/20 transition-all text-white placeholder:text-muted-foreground"
+            className="w-full h-10 pl-9 pr-4 bg-white border border-transparent rounded-[12px] text-sm outline-none focus:ring-2 focus:ring-primary/50 transition-all text-black placeholder:text-gray-500"
           />
         </div>
       </header>

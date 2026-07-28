@@ -10,7 +10,6 @@ class QuestionSchema(BaseModel):
     steps: List[str]
     warnings: List[str]
     question_type: str
-    metadata: dict
 
 class HomeworkResponseSchema(BaseModel):
     subject: str

@@ -11,7 +11,7 @@ from pydantic import ValidationError
 class GeminiService:
     def __init__(self):
         self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
-        self.model_name = "gemini-2.5-flash"
+        self.model_name = "gemini-flash-latest"
         
     async def analyze_image(self, base64_image: bytes, mime_type: str) -> dict:
         start_time = time.time()
