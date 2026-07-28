@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Camera, Image as ImageIcon, ChevronRight, Settings, Clock } from 'lucide-react';
+import { Camera, Image as ImageIcon, ChevronRight } from 'lucide-react';
 import { useImageUpload } from '../hooks/useImageUpload';
 import { validateImages } from '../utils/imageValidation';
 import { useHistoryQuery } from '../hooks/useHomework';
