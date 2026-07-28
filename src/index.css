@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root, .dark {
+    --background: 220 49% 8%; /* #0B1220 */
+    --foreground: 210 40% 98%; /* #F8FAFC */
+    
+    --surface: 221 39% 11%; /* #111827 */
+    --card: 221 38% 15%; /* #172033 */
+    --card-hover: 217 33% 17%; /* #1E293B */
+    --card-foreground: 210 40% 98%;
+    
+    --popover: 221 39% 11%;
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: 217 91% 60%; /* #3B82F6 */
+    --primary-foreground: 0 0% 100%;
+    
+    --accent: 189 94% 43%; /* #06B6D4 */
+    --accent-foreground: 0 0% 100%;
+    
+    --secondary: 221 38% 15%; 
+    --secondary-foreground: 210 40% 98%;
+    
+    --muted: 221 38% 15%;
+    --muted-foreground: 214 32% 65%; /* #94A3B8 */
+    
+    --destructive: 0 84% 60%; /* #EF4444 */
+    --destructive-foreground: 0 0% 100%;
+    
+    --warning: 38 92% 50%; /* #F59E0B */
+    --warning-foreground: 0 0% 100%;
+    
+    --success: 160 84% 39%; /* #10B981 */
+    --success-foreground: 0 0% 100%;
+    
+    --border: 0 0% 100%; /* White for opacity usage */
+    --input: 221 38% 15%;
+    --ring: 217 91% 60%;
+    
+    --radius: 1rem; /* 16px */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+/* Minimal utility classes */
+html, body, #root {
+  -webkit-tap-highlight-color: transparent;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent body scroll entirely */
+}
+
+#root {
+  display: flex;
+  justify-content: center;
+  background-color: var(--background);
+}
+
+.h-viewport {
+  height: 100vh; /* Fallback for older browsers */
+  height: 100lvh; /* Large viewport */
+  height: 100svh; /* Small viewport (safest for mobile) */
+  height: 100dvh; /* Dynamic viewport (modern default) */
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
