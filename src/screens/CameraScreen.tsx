@@ -77,7 +77,7 @@ export default function CameraScreen() {
             autoPlay 
             playsInline 
             muted 
-            className="w-full h-full object-cover"
+            className="absolute w-full h-full object-cover block opacity-100 visible z-0"
           />
         )}
       </div>

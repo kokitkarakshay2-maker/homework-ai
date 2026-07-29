@@ -2,18 +2,20 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 
 export function useCamera() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const [streamState, setStreamState] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
   const [hasTorch, setHasTorch] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
 
   const stopCamera = useCallback(() => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+      setStreamState(null);
     }
-  }, [stream]);
+  }, []); // No dependencies, prevents infinite loops!
 
   const startCamera = useCallback(async (mode: 'environment' | 'user' = facingMode) => {
     stopCamera();
@@ -23,20 +25,64 @@ export function useCamera() {
         throw new Error('Camera not supported by this browser. HTTPS is required.');
       }
 
-      const newStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: mode }
-      });
-      setStream(newStream);
-      setFacingMode(mode);
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = newStream;
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if (window.location.protocol !== 'https:' && !isLocalhost) {
+        throw new Error('Camera requires HTTPS.');
       }
 
-      // Check for torch capability
+      let newStream: MediaStream;
+      try {
+        newStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: mode },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          },
+          audio: false
+        });
+      } catch (err: any) {
+        console.warn("Primary camera request failed, attempting fallback.", err);
+        if (mode === 'environment') {
+          newStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: 'user',
+              width: { ideal: 1920 },
+              height: { ideal: 1080 }
+            },
+            audio: false
+          });
+          mode = 'user';
+        } else {
+          throw err;
+        }
+      }
+
+      streamRef.current = newStream;
+      setStreamState(newStream);
+      setFacingMode(mode);
+
+      console.log("Permission granted. Media stream received.");
+      console.log("Tracks:", newStream.getTracks());
+      console.log("Camera label:", newStream.getVideoTracks()[0]?.label);
+
+      if (videoRef.current) {
+        const video = videoRef.current;
+        video.srcObject = newStream;
+        
+        video.onloadedmetadata = async () => {
+          console.log("Metadata loaded. videoWidth:", video.videoWidth, "videoHeight:", video.videoHeight);
+          try {
+            await video.play();
+            console.log("play() success", "readyState:", video.readyState, "networkState:", video.networkState);
+          } catch (e) {
+            console.error("Play failed", e);
+          }
+        };
+      }
+
       const track = newStream.getVideoTracks()[0];
       const capabilities = track.getCapabilities ? track.getCapabilities() : {};
-      // @ts-ignore - torch is not strictly typed in standard lib yet
+      // @ts-ignore
       setHasTorch(!!capabilities.torch);
       setTorchOn(false);
 
@@ -54,15 +100,15 @@ export function useCamera() {
         setError(err.message || 'Failed to access camera.');
       }
     }
-  }, [stopCamera, facingMode]);
+  }, [stopCamera, facingMode]); // safe dependencies
 
   const toggleCamera = useCallback(() => {
     startCamera(facingMode === 'environment' ? 'user' : 'environment');
   }, [facingMode, startCamera]);
 
   const toggleTorch = useCallback(async () => {
-    if (!stream || !hasTorch) return;
-    const track = stream.getVideoTracks()[0];
+    if (!streamRef.current || !hasTorch) return;
+    const track = streamRef.current.getVideoTracks()[0];
     try {
       // @ts-ignore
       await track.applyConstraints({ advanced: [{ torch: !torchOn }] });
@@ -70,16 +116,24 @@ export function useCamera() {
     } catch (err) {
       console.error('Failed to toggle torch', err);
     }
-  }, [stream, hasTorch, torchOn]);
+  }, [hasTorch, torchOn]);
 
   const capturePhoto = useCallback((): Promise<File | null> => {
     return new Promise((resolve) => {
-      if (!videoRef.current || !stream) {
+      if (!videoRef.current || !streamRef.current) {
         resolve(null);
         return;
       }
 
       const video = videoRef.current;
+      
+      // Wait for stream to become active if dimensions are zero
+      if (video.videoWidth === 0 || video.videoHeight === 0) {
+        console.warn("Video dimensions are 0. Camera may not be fully initialized.");
+        resolve(null);
+        return;
+      }
+
       const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
@@ -100,9 +154,8 @@ export function useCamera() {
         resolve(file);
       }, 'image/jpeg', 0.95);
     });
-  }, [stream]);
+  }, []);
 
-  // Clean up on unmount
   useEffect(() => {
     return () => stopCamera();
   }, [stopCamera]);
@@ -117,6 +170,6 @@ export function useCamera() {
     hasTorch,
     torchOn,
     error,
-    isReady: !!stream
+    isReady: !!streamState
   };
 }
