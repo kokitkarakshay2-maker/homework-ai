@@ -28,6 +28,7 @@ class HistoryService:
                 "write_this": q.write_this,
                 "steps": q.explanation,
                 "warnings": q.metadata_json.get("warnings", []) if q.metadata_json else [],
+                "interactive_data": q.metadata_json.get("interactive_data") if q.metadata_json else None,
                 "color": q.color,
                 "shape": q.shape,
                 "metadata_json": q.metadata_json,
@@ -85,6 +86,8 @@ class HistoryService:
                     meta["answers"] = q_data["answers"]
                 if "warnings" in q_data:
                     meta["warnings"] = q_data["warnings"]
+                if "interactive_data" in q_data:
+                    meta["interactive_data"] = q_data["interactive_data"]
 
                 db_question = WorksheetQuestion(
                     history_id=db_history.id,

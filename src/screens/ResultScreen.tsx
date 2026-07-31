@@ -18,6 +18,8 @@ import { WarningCard } from '../components/result/WarningCard';
 import { ActivitySummaryCard } from '../components/result/ActivitySummaryCard';
 import { ColourKeyCard } from '../components/result/ColourKeyCard';
 
+import { InteractiveQuestionRenderer } from '../components/InteractiveWorksheet/InteractiveQuestionRenderer';
+
 export default function ResultScreen() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -114,15 +116,23 @@ export default function ResultScreen() {
   const renderQuestionContent = (question: QuestionSchema, index: number, showQuestionCard: boolean = true) => {
     const effectiveAnswer = question.answer || (question.answers && question.answers.length > 0 ? question.answers.join(', ') : '');
 
+    const originalAnswerCards = (
+      <>
+        <AnswerCard questionText={question.question} answerText={effectiveAnswer} answersArray={question.answers} />
+        <WriteThisCard textToWrite={effectiveAnswer} />
+      </>
+    );
+
     return (
       <div className="flex flex-col gap-6">
         {showQuestionCard && (
           <QuestionCard questionNumber={index + 1} questionText={question.question} />
         )}
         
-        <AnswerCard questionText={question.question} answerText={effectiveAnswer} answersArray={question.answers} />
-        
-        <WriteThisCard textToWrite={effectiveAnswer} />
+        <InteractiveQuestionRenderer 
+          question={question} 
+          fallback={originalAnswerCards} 
+        />
         
         <ExplanationAccordion steps={question.steps} />
         

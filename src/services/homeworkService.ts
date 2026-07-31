@@ -1,12 +1,36 @@
 import { api } from './api';
 
+export interface InteractiveOption {
+  text: string;
+  selected?: boolean;
+  is_correct?: boolean;
+}
+
+export interface InteractiveMatch {
+  left: string;
+  right: string;
+}
+
+export interface InteractiveData {
+  text?: string;
+  blank?: string;
+  options?: InteractiveOption[];
+  matches?: InteractiveMatch[];
+  question_text?: string;
+  answer_text?: string;
+  state?: boolean;
+}
+
 export interface QuestionSchema {
   id: number;
   question: string;
   answer: string;
   answers?: string[];
+  write_this: string;
   steps: string[];
   warnings: string[];
+  question_type: string;
+  interactive_data?: InteractiveData;
 }
 
 export interface HomeworkResponseSchema {
