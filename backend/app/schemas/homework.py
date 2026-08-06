@@ -5,10 +5,16 @@ class InteractiveOption(BaseModel):
     text: str
     selected: Optional[bool] = None
     is_correct: Optional[bool] = None
+    color: Optional[str] = None
+    shape: Optional[str] = None
 
 class InteractiveMatch(BaseModel):
     left: str
     right: str
+
+class LegendItem(BaseModel):
+    concept: str
+    color: str
 
 class InteractiveData(BaseModel):
     text: Optional[str] = None
@@ -18,6 +24,16 @@ class InteractiveData(BaseModel):
     question_text: Optional[str] = None
     answer_text: Optional[str] = None
     state: Optional[bool] = None
+    legend: Optional[List[LegendItem]] = None
+    total: Optional[int] = None
+    subtract: Optional[int] = None
+    shape: Optional[str] = None
+    operation: Optional[str] = None
+    start: Optional[int] = None
+    steps: Optional[int] = None
+    result: Optional[int] = None
+    max: Optional[int] = None
+
 
 class QuestionSchema(BaseModel):
     id: int

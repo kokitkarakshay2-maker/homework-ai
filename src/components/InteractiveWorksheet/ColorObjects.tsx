@@ -1,5 +1,6 @@
 import type { InteractiveData } from '../../services/homeworkService';
-import { PaintBucket } from 'lucide-react';
+import { ShapeRenderer } from './ShapeRenderer';
+import { mapColorName, getContrastTextColor } from '../../lib/colors';
 
 interface Props {
   data: InteractiveData;
@@ -9,20 +10,29 @@ export function ColorObjects({ data }: Props) {
   if (!data.options) return null;
   
   return (
-    <div className="flex flex-wrap gap-4">
-      {data.options.map((opt, i) => (
-        <div 
-          key={i} 
-          className={`flex flex-col items-center gap-3 p-4 rounded-xl min-w-[100px] border transition-all ${
-            opt.selected 
-              ? 'bg-[#4ade80]/20 border-[#4ade80]/40 text-[#4ade80] shadow-[0_0_20px_rgba(74,222,128,0.15)]' 
-              : 'bg-surface border-white/5 text-gray-500'
-          }`}
-        >
-          <PaintBucket className={`w-8 h-8 ${opt.selected ? 'text-[#4ade80]' : 'opacity-30'}`} />
-          <span className="font-medium text-[15px]">{opt.text}</span>
-        </div>
-      ))}
+    <div className="flex flex-col gap-2 w-full">
+      {data.options.map((opt, i) => {
+        const shape = opt.shape || 'square';
+        const colorHex = opt.color ? mapColorName(opt.color) : '#f3f4f6';
+
+        return (
+          <div 
+            key={i} 
+            className={`flex items-center gap-4 px-4 py-3 rounded-2xl transition-all cursor-default border ${
+              opt.selected 
+                ? 'bg-surface/80 shadow-sm border-white/5 hover:bg-surface' 
+                : 'bg-transparent border-transparent text-gray-500'
+            }`}
+          >
+            <div className={`w-10 h-10 shrink-0 flex items-center justify-center transition-transform ${opt.selected ? 'scale-110' : 'opacity-40'}`}>
+              <ShapeRenderer shape={shape} color={opt.selected ? colorHex : '#4b5563'} className="w-full h-full drop-shadow-sm" />
+            </div>
+            <span className={`font-medium text-[17px] ${opt.selected ? 'text-gray-100' : ''}`}>
+              {opt.text}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -6,10 +6,10 @@ interface Props {
 
 export function FillBlank({ data }: Props) {
   return (
-    <div className="flex flex-wrap items-center gap-2 text-[17px] leading-relaxed text-white bg-surface p-5 rounded-xl border border-white/5">
+    <div className="flex flex-wrap items-center gap-2 text-[17px] leading-relaxed text-gray-100 bg-surface p-5 rounded-xl border border-white/5">
       {data.text && <span>{data.text}</span>}
       {data.blank && (
-        <span className="px-4 py-1.5 bg-primary/20 text-primary border border-primary/30 rounded-xl font-medium shadow-sm">
+        <span className="px-4 py-1.5 bg-[#3b82f6]/20 text-[#3b82f6] border border-[#3b82f6]/40 rounded-xl font-medium shadow-sm italic">
           {data.blank}
         </span>
       )}
