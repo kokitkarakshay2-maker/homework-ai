@@ -4,11 +4,18 @@ export interface InteractiveOption {
   text: string;
   selected?: boolean;
   is_correct?: boolean;
+  color?: string;
+  shape?: string;
 }
 
 export interface InteractiveMatch {
   left: string;
   right: string;
+}
+
+export interface LegendItem {
+  concept: string;
+  color: string;
 }
 
 export interface InteractiveData {
@@ -19,6 +26,18 @@ export interface InteractiveData {
   question_text?: string;
   answer_text?: string;
   state?: boolean;
+  
+  start?: number;
+  steps?: number;
+  result?: number;
+  operation?: "add" | "subtract" | string;
+  max?: number;
+
+  total?: number;
+  subtract?: number;
+  shape?: string;
+
+  legend?: LegendItem[];
 }
 
 export interface QuestionSchema {

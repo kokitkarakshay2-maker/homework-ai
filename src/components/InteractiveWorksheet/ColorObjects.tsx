@@ -1,6 +1,6 @@
 import type { InteractiveData } from '../../services/homeworkService';
 import { ShapeRenderer } from './ShapeRenderer';
-import { mapColorName, getContrastTextColor } from '../../lib/colors';
+import { mapColorName } from '../../lib/colors';
 
 interface Props {
   data: InteractiveData;

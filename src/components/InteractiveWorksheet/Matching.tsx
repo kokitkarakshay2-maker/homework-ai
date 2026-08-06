@@ -1,5 +1,4 @@
 import type { InteractiveData } from '../../services/homeworkService';
-import { ArrowRight } from 'lucide-react';
 
 interface Props {
   data: InteractiveData;

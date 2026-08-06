@@ -1,5 +1,4 @@
-import React from 'react';
-import { Cloud, Star, Circle, Square, Triangle, Heart, Apple, Fish, Bird, Leaf, Flower2, Hexagon } from 'lucide-react';
+import { Cloud, Star, Circle, Square, Triangle, Heart, Apple, Fish, Bird, Leaf, Flower2 } from 'lucide-react';
 
 interface Props {
   shape?: string;

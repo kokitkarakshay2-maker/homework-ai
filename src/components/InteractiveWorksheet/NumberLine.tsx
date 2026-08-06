@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { InteractiveData } from '../../services/homeworkService';
-import { Check } from 'lucide-react';
 
 interface Props {
   data: InteractiveData;

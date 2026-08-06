@@ -1,10 +1,6 @@
-import React from 'react';
 import { mapColorName } from '../../lib/colors';
+import type { LegendItem } from '../../services/homeworkService';
 
-interface LegendItem {
-  concept: string;
-  color: string;
-}
 
 interface Props {
   legend: LegendItem[];

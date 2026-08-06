@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { InteractiveData } from '../../services/homeworkService';
 import { ShapeRenderer } from './ShapeRenderer';
 import { X } from 'lucide-react';
