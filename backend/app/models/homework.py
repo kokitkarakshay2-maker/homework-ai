@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, JSON, Text, Integer, ForeignKey
+from sqlalchemy import Column, String, DateTime, JSON, Text, Integer, ForeignKey, Boolean
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.database.database import Base
@@ -18,10 +18,44 @@ class AppSettings(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
 
+class Workspace(Base):
+    __tablename__ = "workspaces"
+
+    id = Column(String, primary_key=True, default=generate_uuid, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    devices = relationship("WorkspaceDevice", back_populates="workspace", cascade="all, delete-orphan")
+    histories = relationship("HomeworkHistory", back_populates="workspace", cascade="all, delete-orphan")
+
+
+class WorkspaceDevice(Base):
+    __tablename__ = "workspace_devices"
+
+    id = Column(String, primary_key=True, default=generate_uuid, index=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True, nullable=False)
+    device_id = Column(String, index=True, nullable=False)
+    device_name = Column(String, nullable=False)
+    platform = Column(String, nullable=True)
+    last_active = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    workspace = relationship("Workspace", back_populates="devices")
+
+
+class PairingToken(Base):
+    __tablename__ = "pairing_tokens"
+
+    id = Column(String, primary_key=True, default=generate_uuid, index=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True, nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    used = Column(Boolean, default=False)
+
+
 class HomeworkHistory(Base):
     __tablename__ = "homework_history"
 
     id = Column(String, primary_key=True, default=generate_uuid, index=True)
+    workspace_id = Column(String, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True, nullable=True)
     device_id = Column(String, index=True, nullable=True) # Initially single household, but future proofing
     future_user_id = Column(String, index=True, nullable=True) # For when auth is added
     
@@ -44,6 +78,7 @@ class HomeworkHistory(Base):
     
     # Relationships
     questions = relationship("WorksheetQuestion", back_populates="history", cascade="all, delete-orphan")
+    workspace = relationship("Workspace", back_populates="histories")
 
 
 class WorksheetQuestion(Base):

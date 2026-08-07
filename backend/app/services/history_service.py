@@ -53,7 +53,7 @@ class HistoryService:
             processed_response=processed_response
         )
 
-    def create_history(self, device_id: str, filename: str, thumbnail_url: str, processed_response: dict, time_ms: int = None) -> HistoryResponseSchema | None:
+    def create_history(self, device_id: str, filename: str, thumbnail_url: str, processed_response: dict, time_ms: int = None, workspace_id: str = None) -> HistoryResponseSchema | None:
         """
         Creates the History record and all associated questions.
         Returns the parsed schema on success, or None if the DB transaction fails.
@@ -65,6 +65,7 @@ class HistoryService:
 
             db_history = HomeworkHistory(
                 device_id=device_id,
+                workspace_id=workspace_id,
                 filename=filename,
                 subject=subject,
                 worksheet_title=title,
@@ -123,27 +124,48 @@ class HistoryService:
             return self._serialize_history(db_history)
         return None
 
-    def list_history(self, device_id: str, skip: int = 0, limit: int = 20) -> Tuple[List[HistoryResponseSchema], int]:
-        query = self.db.query(HomeworkHistory).filter(
-            HomeworkHistory.device_id == device_id,
-            HomeworkHistory.deleted_at == None
-        )
+    def list_history(self, device_id: str, skip: int = 0, limit: int = 20, workspace_id: str = None) -> Tuple[List[HistoryResponseSchema], int]:
+        query = self.db.query(HomeworkHistory).filter(HomeworkHistory.deleted_at == None)
+        if workspace_id:
+            query = query.filter(HomeworkHistory.workspace_id == workspace_id)
+        else:
+            query = query.filter(HomeworkHistory.device_id == device_id)
         
         total = query.count()
         db_histories = query.order_by(HomeworkHistory.created_at.desc()).offset(skip).limit(limit).all()
         
         return [self._serialize_history(h) for h in db_histories], total
 
-    def delete_history(self, history_id: str, device_id: str) -> bool:
+    def delete_history(self, history_id: str, device_id: str, workspace_id: str = None) -> bool:
         from datetime import datetime, timezone
-        db_history = self.db.query(HomeworkHistory).filter(
+        query = self.db.query(HomeworkHistory).filter(
             HomeworkHistory.id == history_id,
-            HomeworkHistory.device_id == device_id,
             HomeworkHistory.deleted_at == None
-        ).first()
+        )
+        if workspace_id:
+            query = query.filter(HomeworkHistory.workspace_id == workspace_id)
+        else:
+            query = query.filter(HomeworkHistory.device_id == device_id)
+            
+        db_history = query.first()
         
         if db_history:
             db_history.deleted_at = datetime.now(timezone.utc)
             self.db.commit()
             return True
         return False
+
+    def delete_all_history(self, device_id: str, workspace_id: str = None) -> bool:
+        from datetime import datetime, timezone
+        query = self.db.query(HomeworkHistory).filter(HomeworkHistory.deleted_at == None)
+        if workspace_id:
+            query = query.filter(HomeworkHistory.workspace_id == workspace_id)
+        else:
+            query = query.filter(HomeworkHistory.device_id == device_id)
+            
+        db_histories = query.all()
+        
+        for db_history in db_histories:
+            db_history.deleted_at = datetime.now(timezone.utc)
+        self.db.commit()
+        return True

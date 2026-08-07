@@ -39,6 +39,7 @@ async def analyze_homework(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     x_device_id: Optional[str] = Header(None, description="Unique Device ID"),
+    x_workspace_id: Optional[str] = Header(None, description="Workspace ID"),
     db: Session = Depends(get_db)
 ):
     total_start = time.time()
@@ -96,7 +97,8 @@ async def analyze_homework(
         filename=file.filename,
         thumbnail_url=thumbnail_url,
         processed_response=processed_response,
-        time_ms=int((time.time() - total_start) * 1000)
+        time_ms=int((time.time() - total_start) * 1000),
+        workspace_id=x_workspace_id
     )
     
     telemetry["db_save"] = round((time.time() - t0) * 1000)

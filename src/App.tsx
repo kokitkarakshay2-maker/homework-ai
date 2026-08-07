@@ -69,8 +69,13 @@ function AnimatedRoutes() {
   );
 }
 
+import { useWorkspaceInit } from './hooks/useWorkspaceInit';
+import { useSupabaseRealtime } from './hooks/useSupabaseRealtime';
+
 function App() {
   const { isOnline } = useNetworkState();
+  useWorkspaceInit();
+  useSupabaseRealtime();
 
   return (
     <ImageUploadProvider>

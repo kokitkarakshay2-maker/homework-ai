@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database.config import settings
 from app.database.database import engine, Base
-from app.api.routes import homework, history
+from app.api.routes import homework, history, workspace
 from app.middleware.error_handler import global_exception_handler, validation_exception_handler
 from app.middleware.rate_limit import SimpleRateLimitMiddleware
 from fastapi.exceptions import RequestValidationError
@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 
 # Create tables (In a real scenario, use Alembic strictly)
 # Since we have Alembic, we might skip this, but for dev it helps if run without alembic
-# Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -40,6 +40,7 @@ app.add_exception_handler(RequestValidationError, validation_exception_handler)
 # Routers
 app.include_router(homework.router, prefix=settings.API_V1_STR)
 app.include_router(history.router, prefix=settings.API_V1_STR)
+app.include_router(workspace.router, prefix=settings.API_V1_STR)
 
 @app.get("/health")
 def health_check():

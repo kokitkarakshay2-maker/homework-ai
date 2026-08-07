@@ -16,6 +16,11 @@ api.interceptors.request.use((config) => {
   const deviceId = getDeviceId();
   config.headers['x-device-id'] = deviceId;
   
+  const workspaceId = localStorage.getItem('hwai_workspace_id');
+  if (workspaceId) {
+    config.headers['x-workspace-id'] = workspaceId;
+  }
+  
   console.log(`[${performance.now().toFixed(0)}ms] [Frontend] Axios request started / Request sent`);
   return config;
 });

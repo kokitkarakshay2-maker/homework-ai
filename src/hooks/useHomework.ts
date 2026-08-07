@@ -65,3 +65,36 @@ export const useDeleteHistoryMutation = () => {
     }
   });
 };
+
+export const useDeleteAllHistoryMutation = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation<void, Error, void>({
+    mutationFn: () => homeworkService.deleteAllHistory(),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['history'] });
+      const previousHistory = queryClient.getQueriesData<HistoryListResponse>({ queryKey: ['history'] });
+      
+      queryClient.setQueriesData<HistoryListResponse>({ queryKey: ['history'] }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          items: [],
+          total: 0
+        };
+      });
+      
+      return { previousHistory };
+    },
+    onError: (_err, _variables, context: any) => {
+      if (context?.previousHistory) {
+        context.previousHistory.forEach(([queryKey, data]: any) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['history'] });
+    }
+  });
+};

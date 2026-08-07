@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Moon, LogOut, ChevronRight, Globe, Lock, Download } from 'lucide-react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { AppShell, AppContent } from '../components/layout/AppShell';
+import FamilyWorkspace from '../components/workspace/FamilyWorkspace';
 
 export default function SettingsScreen() {
   const { isInstallable, promptInstall } = usePWAInstall();
@@ -70,6 +71,9 @@ export default function SettingsScreen() {
             </div>
           </div>
         </div>
+
+        {/* Section: Family Workspace */}
+        <FamilyWorkspace />
 
         {/* Section: Account */}
         <div className="mb-8">

@@ -101,5 +101,47 @@ export const homeworkService = {
 
   deleteHistory: async (id: string): Promise<void> => {
     await api.delete(`/history/${id}`);
+  },
+
+  deleteAllHistory: async (): Promise<void> => {
+    await api.delete(`/history`);
+  }
+};
+
+export interface DeviceSchema {
+  id: string;
+  device_id: string;
+  device_name: string;
+  platform: string;
+  last_active: string;
+}
+
+export const workspaceService = {
+  initWorkspace: async (device_id: string, device_name: string, platform: string): Promise<{workspace_id: string}> => {
+    const response = await api.post('/workspace/init', { device_id, device_name, platform });
+    return response.data;
+  },
+
+  generatePairingToken: async (): Promise<{token_id: string, expires_at: string}> => {
+    const response = await api.post('/workspace/pairing/generate');
+    return response.data;
+  },
+
+  joinWorkspace: async (token_id: string, device_id: string, device_name: string, platform: string): Promise<{workspace_id: string}> => {
+    const response = await api.post('/workspace/pairing/join', { token_id, device_id, device_name, platform });
+    return response.data;
+  },
+
+  listDevices: async (): Promise<DeviceSchema[]> => {
+    const response = await api.get('/workspace/devices');
+    return response.data;
+  },
+
+  renameDevice: async (device_id: string, new_name: string): Promise<void> => {
+    await api.put(`/workspace/devices/${device_id}`, { new_name });
+  },
+
+  removeDevice: async (device_id: string): Promise<void> => {
+    await api.delete(`/workspace/devices/${device_id}`);
   }
 };
