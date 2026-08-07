@@ -30,9 +30,11 @@ def init_workspace(req: InitRequest, db: Session = Depends(get_db)):
 
 @router.post("/pairing/generate", response_model=dict)
 def generate_pairing_token(
-    x_workspace_id: str = Header(..., description="Workspace ID"),
+    x_workspace_id: Optional[str] = Header(None, description="Workspace ID"),
     db: Session = Depends(get_db)
 ):
+    if not x_workspace_id:
+        raise HTTPException(status_code=400, detail="Workspace ID is required")
     ws_service = WorkspaceService(db)
     token_info = ws_service.generate_token(x_workspace_id)
     return token_info
@@ -48,9 +50,11 @@ def join_workspace(req: JoinRequest, db: Session = Depends(get_db)):
 
 @router.get("/devices", response_model=List[dict])
 def list_devices(
-    x_workspace_id: str = Header(..., description="Workspace ID"),
+    x_workspace_id: Optional[str] = Header(None, description="Workspace ID"),
     db: Session = Depends(get_db)
 ):
+    if not x_workspace_id:
+        return []
     ws_service = WorkspaceService(db)
     return ws_service.list_devices(x_workspace_id)
 
@@ -58,9 +62,11 @@ def list_devices(
 def rename_device(
     device_id: str,
     req: RenameRequest,
-    x_workspace_id: str = Header(..., description="Workspace ID"),
+    x_workspace_id: Optional[str] = Header(None, description="Workspace ID"),
     db: Session = Depends(get_db)
 ):
+    if not x_workspace_id:
+        raise HTTPException(status_code=400, detail="Workspace ID is required")
     ws_service = WorkspaceService(db)
     success = ws_service.rename_device(x_workspace_id, device_id, req.new_name)
     if not success:
@@ -70,9 +76,11 @@ def rename_device(
 @router.delete("/devices/{device_id}", status_code=status.HTTP_204_NO_CONTENT)
 def remove_device(
     device_id: str,
-    x_workspace_id: str = Header(..., description="Workspace ID"),
+    x_workspace_id: Optional[str] = Header(None, description="Workspace ID"),
     db: Session = Depends(get_db)
 ):
+    if not x_workspace_id:
+        raise HTTPException(status_code=400, detail="Workspace ID is required")
     ws_service = WorkspaceService(db)
     success = ws_service.remove_device(x_workspace_id, device_id)
     if not success:

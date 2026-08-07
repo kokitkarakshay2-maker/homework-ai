@@ -18,12 +18,20 @@ export default function FamilyWorkspace() {
 
   const fetchDevices = async () => {
     try {
+      const workspaceId = localStorage.getItem('hwai_workspace_id');
+      if (!workspaceId) {
+        setTimeout(fetchDevices, 1000);
+        return;
+      }
       const data = await workspaceService.listDevices();
       setDevices(data);
     } catch (e) {
       console.error("Failed to fetch devices", e);
-    } finally {
       setLoading(false);
+    } finally {
+      if (localStorage.getItem('hwai_workspace_id')) {
+        setLoading(false);
+      }
     }
   };
 
