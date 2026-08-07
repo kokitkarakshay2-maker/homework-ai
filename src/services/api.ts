@@ -18,6 +18,7 @@ api.interceptors.request.use((config) => {
   
   const workspaceId = localStorage.getItem('hwai_workspace_id');
   if (workspaceId) {
+    console.log('[API] Current workspace_id header:', workspaceId);
     config.headers['x-workspace-id'] = workspaceId;
   }
   

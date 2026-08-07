@@ -1,9 +1,23 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 
 export function useSupabaseRealtime() {
   const queryClient = useQueryClient();
+  const [workspaceId, setWorkspaceId] = useState<string | null>(
+    localStorage.getItem('hwai_workspace_id')
+  );
+
+  useEffect(() => {
+    // Poll for workspaceId changes (especially during first load)
+    const interval = setInterval(() => {
+      const current = localStorage.getItem('hwai_workspace_id');
+      if (current !== workspaceId) {
+        setWorkspaceId(current);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [workspaceId]);
 
   useEffect(() => {
     if (!supabase) {
@@ -11,8 +25,9 @@ export function useSupabaseRealtime() {
       return;
     }
 
-    const workspaceId = localStorage.getItem('hwai_workspace_id');
     if (!workspaceId) return;
+
+    console.log('[Realtime] Setting up subscription for workspace_id:', workspaceId);
 
     // Listen to changes on the homework_history table for this specific workspace
     const channel = supabase
@@ -38,5 +53,5 @@ export function useSupabaseRealtime() {
     return () => {
       supabase?.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, workspaceId]);
 }

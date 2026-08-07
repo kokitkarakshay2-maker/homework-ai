@@ -16,6 +16,7 @@ def list_histories(
     x_workspace_id: Optional[str] = Header(None, description="Workspace ID"),
     db: Session = Depends(get_db)
 ):
+    print(f"Queried workspace_id: {x_workspace_id}")
     history_service = HistoryService(db)
     device_id = x_device_id or "anonymous_device"
     items, total = history_service.list_history(device_id=device_id, skip=skip, limit=limit, workspace_id=x_workspace_id)
@@ -36,6 +37,7 @@ def delete_history(
     x_workspace_id: Optional[str] = Header(None, description="Workspace ID"),
     db: Session = Depends(get_db)
 ):
+    print(f"Deleted workspace_id: {x_workspace_id}")
     history_service = HistoryService(db)
     device_id = x_device_id or "anonymous_device"
     success = history_service.delete_history(id, device_id=device_id, workspace_id=x_workspace_id)
@@ -49,6 +51,7 @@ def delete_all_history(
     x_workspace_id: Optional[str] = Header(None, description="Workspace ID"),
     db: Session = Depends(get_db)
 ):
+    print(f"Deleted all workspace_id: {x_workspace_id}")
     history_service = HistoryService(db)
     device_id = x_device_id or "anonymous_device"
     history_service.delete_all_history(device_id=device_id, workspace_id=x_workspace_id)

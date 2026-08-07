@@ -92,6 +92,7 @@ async def analyze_homework(
     history_service = HistoryService(db)
     
     # Try to save to DB. If it fails, it returns None.
+    print(f"Inserted workspace_id: {x_workspace_id}")
     history_record = history_service.create_history(
         device_id=device_id,
         filename=file.filename,
