@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { QrCode, Scan, Smartphone, Tablet, Monitor, Pencil, Trash2, X } from 'lucide-react';
 import { workspaceService, type DeviceSchema } from '../../services/homeworkService';
+import { getDeviceId } from '../../lib/device';
 import QRCode from 'react-qr-code';
 import { Scanner } from '@yudiel/react-qr-scanner';
 
@@ -14,7 +15,7 @@ export default function FamilyWorkspace() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   
-  const currentDeviceId = localStorage.getItem('hwai_device_id');
+  const currentDeviceId = getDeviceId();
 
   const fetchDevices = async () => {
     try {
