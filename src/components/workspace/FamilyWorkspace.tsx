@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { QrCode, Scan, Smartphone, Tablet, Monitor, Pencil, Trash2, X } from 'lucide-react';
+import { QrCode, Scan, Smartphone, Tablet, Monitor, Pencil, Trash2, X, Share2, Link, Image as ImageIcon } from 'lucide-react';
 import { workspaceService, type DeviceSchema } from '../../services/homeworkService';
 import { getDeviceId } from '../../lib/device';
 import QRCode from 'react-qr-code';
 import { Scanner } from '@yudiel/react-qr-scanner';
+import jsQR from 'jsqr';
 
 export default function FamilyWorkspace() {
   const [devices, setDevices] = useState<DeviceSchema[]>([]);
@@ -14,6 +15,7 @@ export default function FamilyWorkspace() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
+  const [showToast, setShowToast] = useState(false);
   
   const currentDeviceId = getDeviceId();
 
@@ -84,6 +86,36 @@ export default function FamilyWorkspace() {
     }
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height);
+          if (code && code.data) {
+            handleScan(code.data);
+          } else {
+            alert("Invalid pairing QR code");
+          }
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+    // Reset the input so the same file can be uploaded again if needed
+    e.target.value = '';
+  };
+
   const handleRemove = async (deviceId: string) => {
     if (window.confirm("Remove this device?")) {
       await workspaceService.removeDevice(deviceId);
@@ -102,6 +134,96 @@ export default function FamilyWorkspace() {
     if (platform.toLowerCase().includes('tablet')) return <Tablet className="w-5 h-5" />;
     if (platform.toLowerCase().includes('desktop') || platform.toLowerCase().includes('mac') || platform.toLowerCase().includes('windows')) return <Monitor className="w-5 h-5" />;
     return <Smartphone className="w-5 h-5" />;
+  };
+
+  const handleCopyLink = async () => {
+    if (!pairingToken || timeLeft <= 0) return;
+    const url = `${window.location.origin}/pair?token=${pairingToken.token_id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy link", err);
+    }
+  };
+
+  const handleShareQR = async () => {
+    if (!pairingToken || timeLeft <= 0) return;
+    try {
+      const svgElement = document.getElementById('pairing-qr-svg');
+      if (!svgElement) throw new Error("QR not found");
+
+      const svgData = new XMLSerializer().serializeToString(svgElement);
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const img = new Image();
+      
+      const svgSize = 400; // High resolution for better sharing
+      canvas.width = svgSize;
+      canvas.height = svgSize;
+
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => {
+          if (ctx) {
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          }
+          resolve();
+        };
+        img.onerror = reject;
+        img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+      });
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const file = new File([blob], 'homework-ai-pairing.png', { type: 'image/png' });
+        const url = `${window.location.origin}/pair?token=${pairingToken.token_id}`;
+        
+        const shareData = {
+          title: "Homework AI — Pair Device",
+          text: "Scan this QR code or click the link to join the Family Workspace.",
+          url: url,
+        };
+        
+        let fileShared = false;
+        
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({ ...shareData, files: [file] });
+            fileShared = true;
+          } catch (err: any) {
+            if (err.name !== 'AbortError') {
+              console.error("Share failed", err);
+            }
+          }
+        } else if (navigator.share) {
+          try {
+            await navigator.share(shareData);
+            fileShared = true;
+          } catch (err: any) {
+            if (err.name !== 'AbortError') {
+              console.error("Text share failed", err);
+            }
+          }
+        }
+
+        // Fallback for Desktop or unsupported native share
+        if (!fileShared && (!navigator.share || !navigator.canShare?.({ files: [file] }))) {
+            const downloadUrl = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = downloadUrl;
+            a.download = "homework-ai-pairing.png";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(downloadUrl);
+        }
+      }, 'image/png');
+    } catch (err) {
+      console.error("Failed to generate QR image", err);
+    }
   };
 
   return (
@@ -199,14 +321,47 @@ export default function FamilyWorkspace() {
             <h2 className="text-xl font-bold text-white mb-2">Pair Device</h2>
             <p className="text-sm text-gray-400 mb-6 text-center">Scan this code from another device to join the Family Workspace.</p>
             
-            <div className="bg-white p-4 rounded-xl mb-6">
-              <QRCode value={pairingToken.token_id} size={200} />
+            <div className="bg-white p-4 rounded-xl mb-6 relative">
+              <QRCode id="pairing-qr-svg" value={pairingToken.token_id} size={200} />
+              
+              {timeLeft <= 0 && (
+                <div className="absolute inset-0 bg-white/90 backdrop-blur-[1px] flex items-center justify-center rounded-xl">
+                  <span className="text-red-600 font-medium text-sm px-2 text-center">
+                    This pairing code has expired.<br/>Generate a new QR code.
+                  </span>
+                </div>
+              )}
             </div>
             
-            <div className="text-sm font-medium text-primary">
+            <div className="text-sm font-medium text-primary mb-6">
               Expires in {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
             </div>
+
+            <div className="flex gap-3 w-full">
+              <button 
+                onClick={handleShareQR}
+                disabled={timeLeft <= 0}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Share2 className="w-4 h-4" />
+                Share QR
+              </button>
+              <button 
+                onClick={handleCopyLink}
+                disabled={timeLeft <= 0}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-secondary text-secondary-foreground rounded-lg font-medium hover:bg-secondary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Link className="w-4 h-4" />
+                Copy Link
+              </button>
+            </div>
           </div>
+          
+          {showToast && (
+            <div className="absolute bottom-12 bg-white text-black px-4 py-2 rounded-full font-medium text-sm shadow-lg">
+              Pairing link copied
+            </div>
+          )}
         </div>
       )}
 
@@ -217,11 +372,21 @@ export default function FamilyWorkspace() {
             <h2 className="text-white font-medium">Scan Pairing Code</h2>
             <button onClick={() => setShowScanner(false)} className="p-2 text-white"><X className="w-6 h-6" /></button>
           </div>
-          <div className="flex-1 flex items-center justify-center w-full h-full">
-            <Scanner 
-              onScan={(result) => handleScan(result[0]?.rawValue || '')} 
-              components={{ finder: true }}
-            />
+          <div className="flex-1 flex flex-col items-center justify-center w-full h-full relative">
+            <div className="flex-1 w-full flex items-center justify-center">
+              <Scanner 
+                onScan={(result) => handleScan(result[0]?.rawValue || '')} 
+                components={{ finder: true }}
+              />
+            </div>
+            
+            <div className="absolute bottom-10 left-0 right-0 flex justify-center z-20 px-4">
+              <label className="bg-primary/90 backdrop-blur-sm text-primary-foreground px-6 py-3.5 rounded-full font-medium cursor-pointer shadow-xl flex items-center gap-3 hover:bg-primary transition-colors border border-white/10">
+                <ImageIcon className="w-5 h-5" />
+                Choose from Gallery
+                <input type="file" accept="image/png, image/jpeg, image/webp" className="hidden" onChange={handleImageUpload} />
+              </label>
+            </div>
           </div>
         </div>
       )}

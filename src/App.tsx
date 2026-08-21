@@ -10,6 +10,7 @@ import HistoryScreen from './screens/HistoryScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import OfflineScreen from './screens/OfflineScreen';
 import SplashScreen from './screens/SplashScreen';
+import PairScreen from './screens/PairScreen';
 
 import BottomNavigation from './components/layout/BottomNavigation';
 import { ImageUploadProvider } from './context/ImageUploadContext';
@@ -59,6 +60,7 @@ function AnimatedRoutes() {
         <Route path="/settings" element={<AppLayout><PageTransition><SettingsScreen /></PageTransition></AppLayout>} />
         
         {/* Full screen routes (no bottom nav) */}
+        <Route path="/pair" element={<PageTransition><PairScreen /></PageTransition>} />
         <Route path="/camera" element={<PageTransition><CameraScreen /></PageTransition>} />
         <Route path="/preview" element={<PageTransition><PreviewScreen /></PageTransition>} />
         <Route path="/processing" element={<PageTransition><AIProcessingScreen /></PageTransition>} />
