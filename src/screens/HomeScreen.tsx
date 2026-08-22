@@ -66,16 +66,16 @@ export default function HomeScreen() {
             <p className="text-muted-foreground text-sm font-medium mb-1 tracking-wide uppercase">
               {greetingInfo.greeting}
             </p>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Suraj Parasappagol</h1>
+            <h1 className="text-4xl font-extrabold tracking-tight font-['Outfit'] text-foreground">Suraj P</h1>
           </div>
           <button
             onClick={() => navigate('/settings')}
             className="relative w-[46px] h-[46px] rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-md group"
           >
             <div className="w-full h-full rounded-full border-2 border-primary overflow-hidden bg-surface flex items-center justify-center shadow-sm">
-              <img 
-                src="/profile.jpg" 
-                alt="Profile" 
+              <img
+                src="/profile.jpg"
+                alt="Profile"
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
