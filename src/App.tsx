@@ -13,6 +13,7 @@ import SplashScreen from './screens/SplashScreen';
 import PairScreen from './screens/PairScreen';
 
 import BottomNavigation from './components/layout/BottomNavigation';
+import ReloadPrompt from './components/pwa/ReloadPrompt';
 import { ImageUploadProvider } from './context/ImageUploadContext';
 import { useNetworkState } from './hooks/useNetworkState';
 
@@ -84,6 +85,7 @@ function App() {
       <Router>
         <div className="w-full h-[100dvh] max-w-[430px] mx-auto bg-surface text-foreground shadow-2xl relative overflow-hidden flex flex-col border-x border-white/5">
           {!isOnline ? <OfflineScreen /> : <AnimatedRoutes />}
+          <ReloadPrompt />
         </div>
       </Router>
     </ImageUploadProvider>

@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Moon, LogOut, ChevronRight, Globe, Lock, Download } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useRegisterSW } from 'virtual:pwa-register/react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { AppShell, AppContent } from '../components/layout/AppShell';
 import FamilyWorkspace from '../components/workspace/FamilyWorkspace';
+import { CURRENT_VERSION } from '../config/version';
 
 export default function SettingsScreen() {
   const { isInstallable, promptInstall } = usePWAInstall();
+  const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW();
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return document.documentElement.classList.contains('dark');
   });
@@ -95,8 +99,36 @@ export default function SettingsScreen() {
           </div>
         </div>
 
-        <div className="text-center text-xs text-muted-foreground mt-12">
-          Homework AI v2.0.0 (Minimal Build)
+        {/* Section: About */}
+        <div className="mb-8">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">About Homework AI</h2>
+          <div className="bg-card border border-border rounded-xl divide-y divide-border overflow-hidden">
+            <div className="flex flex-col p-4">
+              <span className="font-medium text-sm mb-1">Version</span>
+              <span className="text-base">{CURRENT_VERSION}</span>
+              
+              {needRefresh ? (
+                <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
+                  <div>
+                    <span className="font-medium text-sm block mb-1">Update available</span>
+                    <span className="text-xs text-muted-foreground">A new version is ready</span>
+                  </div>
+                  <button 
+                    onClick={() => updateServiceWorker(true)}
+                    className="px-4 py-2 text-xs font-semibold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                  >
+                    Update Now
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-4 pt-4 border-t border-border">
+                  <span className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+                    <span className="text-green-500 font-bold">✓</span> You're using the latest version
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </AppContent>
     </AppShell>
