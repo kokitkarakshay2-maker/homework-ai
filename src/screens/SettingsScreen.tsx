@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Moon, LogOut, ChevronRight, Globe, Lock, Download } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { AppShell, AppContent } from '../components/layout/AppShell';
