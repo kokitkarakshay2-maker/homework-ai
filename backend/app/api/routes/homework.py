@@ -82,6 +82,66 @@ async def analyze_homework(
         processed_response = json.loads(raw_ai_text)
         logger.info(f"{get_ts()} JSON validation completed")
         telemetry["json_parsing"] = round((time.time() - t0) * 1000)
+        
+        # 4.1 Process Cropped Images for Interactive Options
+        try:
+            from PIL import Image
+            from io import BytesIO
+            
+            img = Image.open(BytesIO(raw_b64_bytes))
+            img_width, img_height = img.size
+            
+            for q in processed_response.get("questions", []):
+                inter_data = q.get("interactive_data")
+                if not inter_data:
+                    continue
+                options = inter_data.get("options")
+                if not options:
+                    continue
+                    
+                for opt in options:
+                    box = opt.get("box")
+                    # Clear any hallucinated text (like "Row 2") inserted by the AI
+                    opt["image"] = None
+                    
+                    if box and len(box) == 4:
+                        # box is [ymin, xmin, ymax, xmax] scaled 0-1000
+                        ymin, xmin, ymax, xmax = box
+                        
+                        # Clamp to valid 0-1000 range
+                        ymin = max(0, min(1000, ymin))
+                        xmin = max(0, min(1000, xmin))
+                        ymax = max(0, min(1000, ymax))
+                        xmax = max(0, min(1000, xmax))
+                        
+                        left = int((xmin / 1000.0) * img_width)
+                        upper = int((ymin / 1000.0) * img_height)
+                        right = int((xmax / 1000.0) * img_width)
+                        lower = int((ymax / 1000.0) * img_height)
+                        
+                        if right > left and lower > upper:
+                            cropped = img.crop((left, upper, right, lower))
+                            # save to base64
+                            buf = BytesIO()
+                            cropped.save(buf, format="JPEG", quality=85)
+                            crop_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+                            
+                            # upload to Supabase if configured
+                            url = await SupabaseStorageService.upload_thumbnail(crop_b64, content_type="image/jpeg")
+                            if url:
+                                opt["image"] = url
+                            else:
+                                # Safe fallback: Data URI of the cropped region
+                                opt["image"] = f"data:image/jpeg;base64,{crop_b64}"
+                        else:
+                            # Safe fallback: Original thumbnail
+                            opt["image"] = f"data:image/jpeg;base64,{thumbnail_b64}"
+                    else:
+                        # Safe fallback: Original thumbnail if no box provided
+                        opt["image"] = f"data:image/jpeg;base64,{thumbnail_b64}"
+        except Exception as crop_e:
+            logger.error(f"Image cropping/upload failed: {str(crop_e)}")
+            
     except Exception as e:
         logger.error(f"AI Analysis Failed: {str(e)}")
         raise HTTPException(status_code=502, detail="AI analysis failed.")

@@ -1,11 +1,14 @@
 import { api } from './api';
 
 export interface InteractiveOption {
-  text: string;
+  text?: string;
   selected?: boolean;
   is_correct?: boolean;
   color?: string;
   shape?: string;
+  id?: string;
+  image?: string;
+  box?: number[];
 }
 
 export interface InteractiveMatch {
@@ -25,6 +28,8 @@ export interface InteractiveData {
   matches?: InteractiveMatch[];
   question_text?: string;
   answer_text?: string;
+  listening_text?: string;
+  correct_order?: string[];
   state?: boolean;
   
   start?: number;

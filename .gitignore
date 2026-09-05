@@ -23,3 +23,6 @@ dist-ssr
 *.sw?
 .env
 graphify-out
+check_db.py
+test_db.py
+test_gemini.py

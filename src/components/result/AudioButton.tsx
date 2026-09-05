@@ -1,47 +1,24 @@
 import { Volume2, Square } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useSpeech } from '../../hooks/useSpeech';
 
 interface AudioButtonProps {
   text: string;
 }
 
 export function AudioButton({ text }: AudioButtonProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [speechSynthesis, setSpeechSynthesis] = useState<SpeechSynthesis | null>(null);
+  const { speak, stop, isPlaying, isSupported } = useSpeech(text);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-      setSpeechSynthesis(window.speechSynthesis);
-    }
-  }, []);
+  if (!isSupported) {
+    return null;
+  }
 
   const handleToggle = () => {
-    if (!speechSynthesis) return;
-
     if (isPlaying) {
-      speechSynthesis.cancel();
-      setIsPlaying(false);
+      stop();
     } else {
-      // Cancel any ongoing speech
-      speechSynthesis.cancel();
-      
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.onend = () => setIsPlaying(false);
-      utterance.onerror = () => setIsPlaying(false);
-      
-      setIsPlaying(true);
-      speechSynthesis.speak(utterance);
+      speak();
     }
   };
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (speechSynthesis) {
-        speechSynthesis.cancel();
-      }
-    };
-  }, [speechSynthesis]);
 
   return (
     <button 

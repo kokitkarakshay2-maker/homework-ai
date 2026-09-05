@@ -10,6 +10,7 @@ import { SentenceAnswer } from './SentenceAnswer';
 import { TrueFalse } from './TrueFalse';
 import { SubtractByCounting } from './SubtractByCounting';
 import { NumberLine } from './NumberLine';
+import { ListenAndArrange } from './ListenAndArrange';
 import React from 'react';
 
 interface Props {
@@ -53,13 +54,15 @@ export function InteractiveQuestionRenderer({ question, fallback }: Props) {
         return <SubtractByCounting data={interactive_data} />;
       case 'number_line':
         return <NumberLine data={interactive_data} questionStr={question.question} />;
+      case 'listen_and_arrange':
+        return <ListenAndArrange data={interactive_data} />;
       default:
         return null;
     }
   };
 
   const content = renderContent();
-  const requiresOptions = ['multiple_choice', 'circle_words', 'tick_correct', 'color_objects', 'matching'].includes(question_type);
+  const requiresOptions = ['multiple_choice', 'circle_words', 'tick_correct', 'color_objects', 'matching', 'listen_and_arrange'].includes(question_type);
   const hasOptions = Array.isArray(interactive_data.options) && interactive_data.options.length > 0;
   const hasMatches = Array.isArray(interactive_data.matches) && interactive_data.matches.length > 0;
 
