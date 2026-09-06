@@ -132,6 +132,7 @@ export default function ResultScreen() {
         <InteractiveQuestionRenderer 
           question={question} 
           fallback={originalAnswerCards} 
+          thumbnailUrl={resultData.thumbnail_url}
         />
         
         <ExplanationAccordion steps={question.steps} />

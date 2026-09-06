@@ -14,7 +14,7 @@ Rules:
    - multiple_choice: { "options": [{"text": "Apple", "selected": false}, {"text": "Banana", "selected": true}] }
    - circle_words: { "options": [{"text": "Apple", "selected": true}, {"text": "Car", "selected": false}] }
    - tick_correct: { "options": [{"text": "Dog", "selected": true}, {"text": "Chair", "selected": false}] }
-   - color_objects: { "options": [{"text": "Apple", "selected": true}, {"text": "Chair", "selected": false}] } (selected means it should be colored)
+   - color_objects: { "options": [{"text": "Apple", "selected": true, "color": "orange", "box": [ymin, xmin, ymax, xmax]}, {"text": "Chair", "selected": false}] } (CRITICAL: You MUST provide the `box` coordinate [ymin, xmin, ymax, xmax] for EVERY colored object. Coordinates must be 0-1000 scaled integers. selected means it should be colored)
    - matching: { "matches": [{"left": "Apple", "right": "Fruit"}, {"left": "Cow", "right": "Animal"}] }
    - short_answer: { "question_text": "...", "answer_text": "..." }
    - sentence_answer: { "answer_text": "..." }

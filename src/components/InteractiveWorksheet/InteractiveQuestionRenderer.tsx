@@ -3,7 +3,7 @@ import { FillBlank } from './FillBlank';
 import { MultipleChoice } from './MultipleChoice';
 import { CircleWords } from './CircleWords';
 import { TickCorrect } from './TickCorrect';
-import { ColorObjects } from './ColorObjects';
+import { ColoringWorksheet } from './ColoringWorksheet';
 import { Matching } from './Matching';
 import { ShortAnswer } from './ShortAnswer';
 import { SentenceAnswer } from './SentenceAnswer';
@@ -16,11 +16,12 @@ import React from 'react';
 interface Props {
   question: QuestionSchema;
   fallback: React.ReactNode;
+  thumbnailUrl?: string;
 }
 
 import { WorksheetLegend } from './WorksheetLegend';
 
-export function InteractiveQuestionRenderer({ question, fallback }: Props) {
+export function InteractiveQuestionRenderer({ question, fallback, thumbnailUrl }: Props) {
   const { question_type, interactive_data } = question;
 
   // If no interactive data, or math type, or unknown type, fallback to the original UI
@@ -41,7 +42,7 @@ export function InteractiveQuestionRenderer({ question, fallback }: Props) {
       case 'tick_correct':
         return <TickCorrect data={interactive_data} />;
       case 'color_objects':
-        return <ColorObjects data={interactive_data} />;
+        return <ColoringWorksheet data={interactive_data} questionText={question.question} thumbnailUrl={thumbnailUrl} />;
       case 'matching':
         return <Matching data={interactive_data} />;
       case 'short_answer':
