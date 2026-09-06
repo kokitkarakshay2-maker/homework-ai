@@ -25,7 +25,21 @@ interface AnswerCardProps {
 
 export function AnswerCard({ questionText, answerText, answersArray }: AnswerCardProps) {
   const effectiveAnswer = answerText || (answersArray && answersArray.length > 0 ? answersArray.join(', ') : '');
-  if (!effectiveAnswer) return null;
+  
+  if (!effectiveAnswer) {
+    return (
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-[12px] uppercase tracking-widest text-[#94A3B8] font-semibold flex items-center gap-2">
+            CORRECT ANSWER
+          </h2>
+        </div>
+        <div className="p-4 bg-surface/50 text-gray-400 rounded-xl text-center italic border border-white/5">
+          Answer could not be determined from this worksheet.
+        </div>
+      </div>
+    );
+  }
 
   // 1. Detect the question type using our heuristic utility
   const detection = detectQuestionType(questionText, effectiveAnswer);

@@ -19,6 +19,16 @@ class LegendItem(BaseModel):
     concept: str
     color: str
 
+class DrawObjectItem(BaseModel):
+    quantity: int
+    object: str
+
+class SequenceSubquestion(BaseModel):
+    id: str
+    instruction: str
+    sequence: List[int]
+    blanks: List[int]
+
 class InteractiveData(BaseModel):
     text: Optional[str] = None
     blank: Optional[str] = None
@@ -38,6 +48,8 @@ class InteractiveData(BaseModel):
     steps: Optional[int] = None
     result: Optional[int] = None
     max: Optional[int] = None
+    draw_items: Optional[List[DrawObjectItem]] = None
+    subquestions: Optional[List[SequenceSubquestion]] = None
 
 
 class QuestionSchema(BaseModel):

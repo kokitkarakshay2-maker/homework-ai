@@ -11,6 +11,8 @@ import { TrueFalse } from './TrueFalse';
 import { SubtractByCounting } from './SubtractByCounting';
 import { NumberLine } from './NumberLine';
 import { ListenAndArrange } from './ListenAndArrange';
+import { DrawObjects } from './DrawObjects';
+import { FillSequence } from './FillSequence';
 import React from 'react';
 
 interface Props {
@@ -57,6 +59,10 @@ export function InteractiveQuestionRenderer({ question, fallback, thumbnailUrl }
         return <NumberLine data={interactive_data} questionStr={question.question} />;
       case 'listen_and_arrange':
         return <ListenAndArrange data={interactive_data} />;
+      case 'draw_objects':
+        return <DrawObjects data={interactive_data} />;
+      case 'fill_sequence':
+        return <FillSequence data={interactive_data} />;
       default:
         return null;
     }
@@ -69,19 +75,12 @@ export function InteractiveQuestionRenderer({ question, fallback, thumbnailUrl }
 
   const isEmpty = (requiresOptions && question_type !== 'matching' && !hasOptions) || 
                   (question_type === 'matching' && !hasMatches) ||
-                  (question_type === 'subtract_by_counting' && (interactive_data.total === undefined || interactive_data.subtract === undefined));
+                  (question_type === 'subtract_by_counting' && (interactive_data.total === undefined || interactive_data.subtract === undefined)) ||
+                  (question_type === 'draw_objects' && (!interactive_data.draw_items || interactive_data.draw_items.length === 0)) ||
+                  (question_type === 'fill_sequence' && (!interactive_data.subquestions || interactive_data.subquestions.length === 0));
 
   if (isEmpty) {
-    return (
-      <div className="w-full flex flex-col gap-4">
-        {hasLegend && interactive_data.legend && (
-          <WorksheetLegend legend={interactive_data.legend} />
-        )}
-        <div className="p-4 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl text-center font-medium">
-          ⚠️ Developer Warning: Interactive worksheet contains zero items.
-        </div>
-      </div>
-    );
+    return <>{fallback}</>;
   }
 
   if (!content) {

@@ -21,6 +21,18 @@ export interface LegendItem {
   color: string;
 }
 
+export interface DrawObjectItem {
+  quantity: number;
+  object: string;
+}
+
+export interface SequenceSubquestion {
+  id: string;
+  instruction: string;
+  sequence: number[];
+  blanks: number[];
+}
+
 export interface InteractiveData {
   text?: string;
   blank?: string;
@@ -43,6 +55,8 @@ export interface InteractiveData {
   shape?: string;
 
   legend?: LegendItem[];
+  draw_items?: DrawObjectItem[];
+  subquestions?: SequenceSubquestion[];
 }
 
 export interface QuestionSchema {

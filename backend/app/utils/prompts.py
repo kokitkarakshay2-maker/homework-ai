@@ -8,7 +8,7 @@ Rules:
 4. Provide step-by-step solutions in 'steps'.
 5. DO NOT use markdown, HTML, or explanations outside JSON.
 6. Only return the requested JSON schema.
-7. For `question_type`, use one of: 'fill_blank', 'multiple_choice', 'circle_words', 'tick_correct', 'color_objects', 'matching', 'short_answer', 'sentence_answer', 'true_false', 'math', 'subtract_by_counting', 'number_line', or 'listen_and_arrange'.
+7. For `question_type`, use one of: 'fill_blank', 'multiple_choice', 'circle_words', 'tick_correct', 'color_objects', 'matching', 'short_answer', 'sentence_answer', 'true_false', 'math', 'subtract_by_counting', 'number_line', 'listen_and_arrange', 'draw_objects', or 'fill_sequence'.
 8. If the question is interactive, populate `interactive_data`:
    - fill_blank: { "text": "Plants need", "blank": "plant" }
    - multiple_choice: { "options": [{"text": "Apple", "selected": false}, {"text": "Banana", "selected": true}] }
@@ -22,6 +22,8 @@ Rules:
    - subtract_by_counting: { "total": 6, "subtract": 3, "shape": "sun" } (detect the shape used: flower, star, fish, apple, smile, etc.)
    - number_line: { "operation": "subtract", "start": 6, "steps": 2, "result": 4, "max": 10 } (for addition use operation: "add")
    - listen_and_arrange: { "listening_text": "Story text...", "options": [{"id": "p1", "text": "desc", "box": [ymin, xmin, ymax, xmax]}, {"id": "p2", "text": "desc2", "box": [ymin, xmin, ymax, xmax]}], "correct_order": ["p2", "p1"] } (CRITICAL: You MUST provide the `options` array with a `box` coordinate [ymin, xmin, ymax, xmax] for EVERY picture to be arranged. Coordinates must be 0-1000 scaled integers.)
+   - draw_objects: { "draw_items": [{"quantity": 10, "object": "mangoes"}] } (Extract exact quantity and object name. Translate wording like "1 ten" to quantity 10)
+   - fill_sequence: { "subquestions": [{"id": "a", "instruction": "Count by twos", "sequence": [4, 6, 8, 10], "blanks": [6, 10]}] } (Preserve sequence logic. 'blanks' must contain the specific numbers missing from the original sequence)
    - math: leave interactive_data null.
 
 INTELLIGENT COLOR & SHAPE DETECTION:
