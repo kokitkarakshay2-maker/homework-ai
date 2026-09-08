@@ -1,24 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
+import { ProcessingAnimation } from '../components/processing/ProcessingAnimation';
 import { useImageUpload } from '../hooks/useImageUpload';
 import { AppShell, AppContent } from '../components/layout/AppShell';
 import { useAnalyzeHomework } from '../hooks/useHomework';
 import ErrorCard from '../components/ErrorCard';
 
-const messages = [
-  "Reading image...",
-  "Understanding worksheet...",
-  "Checking answers...",
-  "Preparing response..."
+const stages = [
+  "Reading your worksheet...",
+  "Understanding the questions...",
+  "Preparing your answers..."
 ];
 
 export default function AIProcessingScreen() {
   const navigate = useNavigate();
   const { images, clearImages } = useImageUpload();
-  const [messageIndex, setMessageIndex] = useState(0);
+  const [stageIndex, setStageIndex] = useState(0);
   const [isTakingLong, setIsTakingLong] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const mutation = useAnalyzeHomework();
 
   useEffect(() => {
@@ -32,8 +32,11 @@ export default function AIProcessingScreen() {
     mutation.mutate({ file, signal: abortController.signal }, {
       onSuccess: (data) => {
         console.log("[Frontend] React Query onSuccess callback fired!", data);
-        console.log("[Frontend] Navigating to /history/:id...");
-        navigate(`/history/${data.id}`, { state: { resultData: data } });
+        setIsSuccess(true);
+        setTimeout(() => {
+          console.log("[Frontend] Navigating to /history/:id...");
+          navigate(`/history/${data.id}`, { state: { resultData: data } });
+        }, 1200);
       },
       onError: (error) => {
         console.error("[Frontend] React Query onError callback fired!", error);
@@ -48,15 +51,18 @@ export default function AIProcessingScreen() {
   }, []); // Removed mutation from deps so it doesn't clean up (abort) on every React Query state change
 
   useEffect(() => {
-    if (mutation.isError || mutation.isSuccess) return;
+    // Only stop rotating messages if there's an error, or if success happened AND we want to freeze.
+    // Actually, letting it show "Homework ready!" is handled by the Scanner component, 
+    // so we can let the index increment safely.
+    if (mutation.isError) return;
 
     const messageInterval = setInterval(() => {
-      setMessageIndex((prev) => (prev < messages.length - 1 ? prev + 1 : 0));
-    }, 2500);
+      setStageIndex((prev) => (prev + 1) % stages.length);
+    }, 3000);
 
     const longTimeout = setTimeout(() => {
       setIsTakingLong(true);
-    }, 20000);
+    }, 25000);
 
     return () => {
       clearInterval(messageInterval);
@@ -110,32 +116,23 @@ export default function AIProcessingScreen() {
 
   return (
     <AppShell>
-      <AppContent className="flex flex-col items-center justify-center px-6 text-center">
-        <Loader2 className="w-10 h-10 text-primary animate-spin mb-8 mx-auto" />
+      <AppContent className="flex flex-col items-center justify-center px-6">
         
-        <div className="h-8 relative w-full mb-4">
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={messageIndex}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -5 }}
-              transition={{ duration: 0.3 }}
-              className="text-lg font-medium text-foreground absolute w-full left-0"
-            >
-              {messages[messageIndex]}
-            </motion.p>
-          </AnimatePresence>
-        </div>
+        <ProcessingAnimation 
+          stageIndex={stageIndex}
+          statusMessage={stages[stageIndex]}
+          isSuccess={isSuccess}
+        />
 
         <AnimatePresence>
-          {isTakingLong && (
+          {isTakingLong && !isSuccess && (
             <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-sm text-muted-foreground mt-4"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="text-sm text-primary/80 mt-8 text-center font-medium"
             >
-              This is taking longer than usual...
+              AI is analyzing complex questions, please wait...
             </motion.p>
           )}
         </AnimatePresence>
